@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import axios from 'axios';
 import Customer from './components/Customer';
 import CustomerAdd from './components/CustomerAdd';
 import './App.css';
@@ -20,6 +21,7 @@ import InputBase from '@material-ui/core/InputBase';
 import { fade } from '@material-ui/core/styles';
 import MenuIcon from '@material-ui/icons/Menu';
 import SearchIcon from '@material-ui/icons/Search';
+import Pagination from '@material-ui/lab/Pagination';
 
 const styles = theme => ({
   root: {
@@ -95,6 +97,10 @@ const styles = theme => ({
         width: 200
       }
     }
+  },
+  page: {
+    marginTop: theme.spacing.unit,
+    justifyContent: 'center'
   }
 });
 
@@ -102,23 +108,41 @@ class App extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      customers: '',
+      customers: [],
       completed: 0,
-      searchKeyword: ''
+      searchKeyword: '',
+      pageSize: 5,
+      currentPage: 0,
+      totalPage: 0
     }
     this.stateRefresh = this.stateRefresh.bind(this);
     this.handleValueChange = this.handleValueChange.bind(this);
+    this.handlePageChange = this.handlePageChange.bind(this);
   }
 
   stateRefresh() {
-    this.setState({
-      customers: '',
-      completed: 0,
-      searchKeyword: ''
-    });
-    this.callApi()
-      .then(res => this.setState({customers: res}))
-      .catch(err => console.log(err));
+    // this.setState({
+    //   customers: [],
+    //   completed: 0,
+    //   searchKeyword: '',
+    //   pageSize: 3,
+    //   currentPage: 0,
+    //   totalPage: 0
+    // });
+    this.state.customers = [];
+    this.state.completed = 0;
+    this.state.searchKeyworld = '';
+    this.state.currentPage = 0;
+
+    this.callAxios()
+    .then(res => this.setState({
+      customers: res.responsePayload.results,
+      currentPage: res.responsePayload.pagination.currentPage,
+      pageSize: res.responsePayload.pagination.pageSize,
+      totalPage: res.responsePayload.pagination.numPages
+    }))
+    .then(console.log(this.state.customers))
+    .catch(err => console.log(err));
   }
 
   handleValueChange(e) {
@@ -127,10 +151,27 @@ class App extends Component {
     this.setState(nextState);
   }
 
+  handlePageChange(event, value) {
+    this.state.currentPage = value - 1;
+    this.callAxios()
+    .then(res => this.setState({
+      customers: res.responsePayload.results,
+      currentPage: res.responsePayload.pagination.currentPage,
+      pageSize: res.responsePayload.pagination.pageSize,
+      totalPage: res.responsePayload.pagination.numPages
+    }))
+    .catch(err => console.log(err));
+  }
+
   componentDidMount() {
     this.timer = setInterval(this.progress, 20);
-    this.callApi()
-    .then(res => this.setState({customers: res}))
+    this.callAxios()
+    .then(res => this.setState({
+      customers: res.responsePayload.results,
+      currentPage: res.responsePayload.pagination.currentPage,
+      pageSize: res.responsePayload.pagination.pageSize,
+      totalPage: res.responsePayload.pagination.numPages
+    }))
     .catch(err => console.log(err));
   }
 
@@ -138,10 +179,20 @@ class App extends Component {
     clearInterval(this.timer);
   }
 
-  callApi = async () => {
-    const response = await fetch('/api/customers/');
-    const body = await response.json();
-    return body;
+  callAxios = async() => {
+    try {
+      let response = await axios.get('/api/customers/', {
+        params: {
+          npp: this.state.pageSize,
+          page: this.state.currentPage
+        }
+      });
+      let body = await response.data;
+      console.log(body);
+      return body;
+    } catch(err) {
+      console.error(err);
+    }
   }
 
   progress = () => {
@@ -179,7 +230,7 @@ class App extends Component {
                 placeholder="Search..."
                 classes={{
                   root: classes.inputRoot,
-                  input: classes. inputInput
+                  input: classes.inputInput
                 }}
                 name="searchKeyword"
                 value={this.state.searchKeyword}
@@ -211,7 +262,10 @@ class App extends Component {
               }
             </TableBody>
           </Table>
-        </Paper>    
+        </Paper>
+        <div className={classes.menu}>
+          <Pagination count={this.state.totalPage} color="primary" page={this.state.currentPage + 1} onChange={this.handlePageChange} />
+        </div>
       </div>
     );
   }
