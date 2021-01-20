@@ -22,21 +22,21 @@ class CustomerAdd extends React.Component {
             name: '',
             id: '',
             gender: '',
-            address: ''
-        }
-        this.handleFormSubmit = this.handleFormSubmit.bind(this)
-        this.handleValueChange = this.handleValueChange.bind(this)
-        this.addCustomer = this.addCustomer.bind(this)
+            address: '',
+            open: false
+        };
+        this.handleFormSubmit = this.handleFormSubmit.bind(this);
+        this.handleValueChange = this.handleValueChange.bind(this);
+        this.addCustomer = this.addCustomer.bind(this);
 
-        this.handleClickOpen = this.handleClickOpen.bind(this)
-        this.handleClose = this.handleClose.bind(this)
+        this.handleClickOpen = this.handleClickOpen.bind(this);
+        this.handleClose = this.handleClose.bind(this);
     }
 
     handleFormSubmit(e) {
         e.preventDefault()
         this.addCustomer()
         .then((response) => {
-            console.log(response.data);
             this.props.stateRefresh();
         })
         .catch(err => console.log(err));

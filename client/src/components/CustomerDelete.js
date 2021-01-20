@@ -12,8 +12,9 @@ class CustomerDelete extends React.Component {
         this.state = {
             open: false
         }
-        this.handleClickOpen = this.handleClickOpen.bind(this)
-        this.handleClose = this.handleClose.bind(this)
+        this.handleClickOpen = this.handleClickOpen.bind(this);
+        this.handleClose = this.handleClose.bind(this);
+        this.deleteCustomer = this.deleteCustomer.bind(this);
     }
 
     handleClickOpen() {
